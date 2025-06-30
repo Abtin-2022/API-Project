@@ -7,12 +7,13 @@ import types
 
 genai.api_key = os.environ["key1"]
 nlp_key = os.environ["key2"]
+news_key = os.environ["key3"]
 
 print(genai.api_key)
 print(nlp_key)
 
 # We get news from news api
-news_api_link = 'https://newsapi.org/v2/top-headlines?sources=bbc-news&apiKey=296b70d839164f609584224f548e61ff'
+news_api_link = f'https://newsapi.org/v2/top-headlines?sources=bbc-news&apiKey={news_key}'
 out = requests.get(news_api_link)
 articles = out.json()['articles']
 first_article_link = articles[0]['url']
