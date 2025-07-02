@@ -19,6 +19,8 @@ print(genai.api_key)
 
 categories = ["general", "world", "nation", "business", "technology", "entertainment", "esports", "science", "health"]
 
+database_dict = {category: [] for category in categories} # create a dictionary with all categories as keys and empty lists as values
+
 engine = db.create_engine('sqlite:///out.db') # initialize database at beginning
 
 # We ask the user what news they want
@@ -37,7 +39,7 @@ client = genai.Client(
 
 response1 = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents=f"From now on you are a professional suggester. Can you categorize the user's prompt, which is: {user}. According to this list of categories: {user_categories}? To be in the category `category` means that the user is asking for one of the following categories: {categories}. Give just one word.",
+    contents=f"From now on you are a professional suggester. Can you categorize the user's prompt, which is: {user}. According to this list of categories: {user_categories}? Only output `category` if the user uses one of the following words {categories}, catch misspelled words. Give just one word.",
 )
 out = response1.text.lower()
 print(out)
@@ -57,20 +59,33 @@ if out == 'category':
 
     response3 = client.models.generate_content(
         model="gemini-2.5-flash",
-        contents=f"From now on you are a professional article reader. Can you read this article {first_article_link} and give back the whole content?",
+        contents=f"From now on you are a professional article reader. Can you read this article https://www.globes.co.il/news/article.aspx?did=1001514819 and give back the whole content? If it's not in english, translate it to english. If you can't read it, just output the word `error` and absolutely nothing else, just the single word `error`.",
     )
 
-    
-    if response2.text in database_dict.keys():
-        database_dict[response2.text].append(response3.text)
-    # instead of adding entire text consider updating database with only summary and printing the summary out
-    else:
-        database_dict[response2.text] = [response3.text]
     print(response3.text)
-    out = pd.DataFrame.from_dict(database_dict)
-    print(out)
-    out.to_sql('articles', con=engine, if_exists='append', index=True) # update for database
-    print(out)
+
+    if response3.text.lower() == 'error':
+        very_new_news_api_link = f""
+        very_new_articles = requests.get(very_new_news_api_link).json()['articles']
+        very_new_first_content = very_new_articles[0]['content']
+
+        response4 = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f"From now on you are a professional article summarizer. Summarize the following as an article: {very_new_first_content}",
+        )
+
+    article_data = {
+        'category': response2.text,
+        'content': response3.text,
+        'timestamp': pd.Timestamp.now()
+    }
+
+    df_to_append = pd.DataFrame([article_data])
+
+    print(response3.text)
+
+    df_to_append.to_sql('articles', con=engine, if_exists='append', index=False) # update for database
+
 
 
 
