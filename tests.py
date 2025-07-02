@@ -1,4 +1,5 @@
 import unittest
+import sqlalchemy as db
 
 from file1 import article_access, content_extractor, insert_to_db, link_extractor
 
