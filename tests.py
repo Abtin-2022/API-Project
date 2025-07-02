@@ -21,16 +21,14 @@ class TestArticleFunctions(unittest.TestCase):
         self.assertEqual(content_extractor(content), 'This is a test article.')
 
     def test_insert_to_db(self):
-        # Mock database engine
-        class MockEngine:
-            def connect(self):
-                return self
+        engine = db.create_engine('sqlite:///out.db')
 
-            def execute(self, query):
-                return
-
-        engine = MockEngine()
         insert_to_db("general", "This is a test article.", engine)
+
+        with engine.connect() as connection:
+            result = connection.execute("SELECT * FROM articles WHERE category='general'").fetchall()
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0]['content'], "This is a test article.")
 
 if __name__ == '__main__':
     unittest.main()
