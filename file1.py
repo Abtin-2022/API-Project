@@ -7,11 +7,31 @@ import types
 import pandas as pd
 import sqlalchemy as db
 
+
+def article_access(out):
+    return out.json()['articles']
+
+def link_extractor(articles): 
+    return articles[0]['url']
+
+def content_extractor(content):
+    return content[0]['content']
+
+def insert_to_db(category, content, engine):
+    article_data = {
+        'category': category,
+        'content': content,
+        'timestamp': pd.Timestamp.now()
+    }
+    
+    # Create a DataFrame and append it to the database
+    df_to_append = pd.DataFrame([article_data])
+    df_to_append.to_sql('articles', con=engine, if_exists='append', index=False)
+
 if __name__ == "__main__":
     genai.api_key = os.environ["key1"]
     nlp_key = os.environ["key2"]
     news_key = os.environ["key3"]
-
 
     # TODO: create env variable
     database_dict = {}
@@ -22,25 +42,6 @@ if __name__ == "__main__":
             contents=prompt,
         )
 
-    def article_access(out):
-        return out.json()['articles']
-
-    def link_extractor(articles): 
-        return articles[0]['url']
-
-    def content_extractor(content):
-        return content[0]['content']
-
-    def insert_to_db(category, content, engine):
-        article_data = {
-            'category': category,
-            'content': content,
-            'timestamp': pd.Timestamp.now()
-        }
-        
-        # Create a DataFrame and append it to the database
-        df_to_append = pd.DataFrame([article_data])
-        df_to_append.to_sql('articles', con=engine, if_exists='append', index=False)
     #print(nlp_key)
 
     categories = ["general", "world", "nation", "business", "technology", "entertainment", "esports", "science", "health"]
