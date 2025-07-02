@@ -39,7 +39,7 @@ client = genai.Client(
 
 response1 = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents=f"From now on you are a professional suggester. Can you categorize the user's prompt, which is: {user}. According to this list of categories: {user_categories}? Only output `category` if the user uses one of the following words {categories}, catch misspelled words. Give just one word.",
+    contents=f"From now on you are a professional suggester. Can you categorize the user's prompt, which is: {user}. According to this list of categories: {user_categories}? Only output `category` if the user uses one of the following words {categories}, catch misspelled words. Give just one word. If the user asks for their history like `i want my news health history`, then output `history`. If the user asks for something else, then output `general`.",
 )
 out = response1.text.lower()
 print(out)
@@ -94,7 +94,13 @@ if out == 'category':
 #database stuff
 elif out == 'history':
     with engine.connect() as connection: # just access the stuff from the database, but we need to change the query for accessing
-        query_result = connection.execute(db.text("SELECT * FROM articles;")).fetchall()
+
+        response3 = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=f"From now on you are a professional sql programmer. According to the history user wants: {user}. Createa an sql query to retrieve what they user is asking for. The table is called `articles` and has columns `category`, `content`, and `timestamp`. The query should return all articles in the table. Retrieve all articles the user wants. If the user wants a specific category, then filter by that category. If the user wants all articles, then return all articles. If the user wants a specific article, then filter by that article. If the user wants a specific date, then filter by that date. If the user wants a specific time range, then filter by that time range. If the user wants a specific keyword, then filter by that keyword. Only output valid SQL code, nothing else. Do not output any explanation or anything else, just the SQL code. NO MARKDOWN OR CODE BLOCKS, JUST THE SQL CODE.",
+    )
+        
+        query_result = connection.execute(db.text(response3.text)).fetchall()
         print(pd.DataFrame(query_result))
 
 # the query for searching general info not categorized, maybe we need to integrate this case within the first condition
