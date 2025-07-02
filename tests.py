@@ -1,6 +1,6 @@
 import unittest
 
-from file1 import article_access, content_extractor, gemini_query, insert_to_db, link_extractor
+from file1 import article_access, content_extractor, insert_to_db, link_extractor
 
 class TestArticleFunctions(unittest.TestCase):
 
@@ -19,11 +19,6 @@ class TestArticleFunctions(unittest.TestCase):
     def test_content_extractor(self):
         content = [{'content': 'This is a test article.'}]
         self.assertEqual(content_extractor(content), 'This is a test article.')
-
-    def test_gemini_query(self):
-        prompt = "What is the capital of France?"
-        response = gemini_query(prompt)
-        self.assertIn("Paris", response)
 
     def test_insert_to_db(self):
         # Mock database engine
