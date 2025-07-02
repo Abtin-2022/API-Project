@@ -7,9 +7,12 @@ import types
 import pandas as pd
 import sqlalchemy as db
 
-genai.api_key = os.environ["key1"]
-nlp_key = os.environ["key2"]
-news_key = os.environ["key3"]
+if __name__ == "__main__":
+    genai.api_key = os.environ["key1"]
+    nlp_key = os.environ["key2"]
+    news_key = os.environ["key3"]
+
+
 # TODO: create env variable
 database_dict = {}
 
