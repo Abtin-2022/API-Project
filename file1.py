@@ -53,7 +53,7 @@ if out == 'category':
     out = requests.get(news_api_link)
     articles = out.json()['articles']
 
-    first_article_link = articles[0]['url']
+    first_article_link = articles[0]['url'] # here maybe we need to check if the output is not empty (just to be safe)
 
     response3 = client.models.generate_content(
         model="gemini-2.5-flash",
@@ -63,6 +63,7 @@ if out == 'category':
     
     if response2.text in database_dict.keys():
         database_dict[response2.text].append(response3.text)
+    # instead of adding entire text consider updating database with only summary and printing the summary out
     else:
         database_dict[response2.text] = [response3.text]
     print(response3.text)
@@ -81,7 +82,7 @@ elif out == 'history':
         query_result = connection.execute(db.text("SELECT * FROM articles;")).fetchall()
         print(pd.DataFrame(query_result))
 
-# the query for searching general info not categorized
+# the query for searching general info not categorized, maybe we need to integrate this case within the first condition
 else:
     pass
 
